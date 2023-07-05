@@ -2,14 +2,14 @@ extern crate alloc;
 
 use core::mem::size_of;
 use core::time::Duration;
-use std::{ffi::OsStr, io::{Read, Write}, thread::JoinHandle, sync::Mutex};
+use std::{ffi::OsStr, io::{Read, Write}, thread::JoinHandle, sync::Mutex, os::windows::raw::SOCKET};
 
 use alloc::sync::Arc;
 use serial::SerialPort;
 #[cfg(windows)]
 use serial::windows::COMPort;
 
-pub const SEP_CHAR : char = ' ';
+pub const SEP_CHAR : u8 = ' ' as u8;
 
 pub struct Base64Serial<T : TryFrom<Vec<u8>> + Default + Send + 'static> {
     #[cfg(windows)]
@@ -46,12 +46,19 @@ impl<T : TryFrom<Vec<u8>> + Default + Send + 'static> Base64Serial<T> {
 
         self.thr = Some(std::thread::spawn(move || {
             let mut buf = Vec::with_capacity(size_of::<T>()*2);
+            let mut buf_len = 1;
+            buf[0] = SEP_CHAR;
 
             loop {
                 let mut port = port_mut.lock().unwrap();
-                if let Err(err) = port.read_exact(&mut buf) {
-                    if !err.to_string().contains("timed out") {
-                        panic!("Thread paniced! {}", err);
+                match port.read(&mut buf[buf_len..]) {
+                    Ok(len) => {
+                        buf_len += len;
+                    },
+                    Err(err) => {
+                        if !err.to_string().contains("timed out") {
+                            panic!("Thread paniced! {}", err);
+                        }
                     }
                 };
                 drop(port);
@@ -60,14 +67,23 @@ impl<T : TryFrom<Vec<u8>> + Default + Send + 'static> Base64Serial<T> {
                 let mut stop_index = None;
 
                 for i in 0 .. buf.len() {
-
+                    if buf[i] == SEP_CHAR {
+                        if start_index.is_some() {
+                            stop_index = Some(i);
+                            break;
+                        } else {
+                            start_index = Some(i); 
+                        }
+                    }
                 }
+                
+                if let Some((start, stop)) = start_index.zip(stop_index) {
+                    let mut state = state_mut.lock().unwrap();
 
-                let mut state = state_mut.lock().unwrap();
-        
 
 
-                drop(state);
+                    drop(state);
+                }
             }
         }));
     }

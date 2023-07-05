@@ -1,6 +1,7 @@
 [package]
 name = "syiot"
-author = "Samuel Noesslboeck <samuel.noesslboeck@gmail.com>"
+authors = [ "Samuel Noesslboeck <samuel.noesslboeck@gmail.com>" ]
+description = "A library for communicating with IOT devices"
 version = "0.1.0"
 edition = "2021"
 
