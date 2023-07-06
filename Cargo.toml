@@ -9,5 +9,10 @@ edition = "2021"
 name = "syiot"
 path = "src/lib.rs"
 
+[[bin]]
+name = "controller"
+path = "bin/controller.rs"
+
 [dependencies]
-serial = "0.4.0"
+serialport = "4.2.1"
+base64 = "0.21.2"
