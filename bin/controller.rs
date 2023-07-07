@@ -1,5 +1,3 @@
-use core::mem::size_of;
-use std::io::{self, Write};
 use std::time::Duration;
 
 #[derive(Debug)]
@@ -8,41 +6,29 @@ struct TestStruct {
     int_test : i8
 }
 
-fn main() {
+impl TryFrom<&[u8]> for TestStruct {
+    type Error = syiot::Error;
+
+    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
+        if value.len() == 2 {
+            unsafe {
+                Ok(std::mem::transmute_copy::<[u8; 2], _>(&value.try_into()?))
+            }
+        } else {
+            Err("Wrong size!".into())
+        }
+    }
+}
+
+fn main() -> Result<(), syiot::Error> {
     let port_name = "COM3";
     let baud_rate = 115200;
+    let timeout = Duration::from_millis(1000);
 
-    let port = serialport::new(port_name, baud_rate)
-        .timeout(Duration::from_millis(10))
-        .data_bits(serialport::DataBits::Eight)
-        .open();
+    let mut tele = syiot::tele::SerialPortTele::open(port_name, baud_rate, timeout)?;
 
-    match port {
-        Ok(mut port) => {
-            let mut serial_buf: Vec<u8> = vec![0; 1000];
-            println!("Receiving data on {} at {} baud:", &port_name, &baud_rate);
-            loop {
-                match port.read(serial_buf.as_mut_slice()) {
-                    Ok(t) => { 
-                        // io::stdout().write_all(&serial_buf[..t]).unwrap();
-
-                        if t == size_of::<TestStruct>() {
-                            unsafe {
-                                let test : TestStruct = std::mem::transmute_copy::<[u8; size_of::<TestStruct>()], _>(&serial_buf[..size_of::<TestStruct>()].try_into().unwrap());
-                                dbg!(test);
-                            }
-                        } else {
-                            println!("Bad size: {}", t);
-                        }
-                    },
-                    Err(ref e) if e.kind() == io::ErrorKind::TimedOut => (),
-                    Err(e) => eprintln!("{:?}", e),
-                }
-            }
-        }
-        Err(e) => {
-            eprintln!("Failed to open \"{}\". Error: {}", port_name, e);
-            ::std::process::exit(1);
-        }
+    loop {
+        let test : TestStruct = tele.recv()?;
+        dbg!(test);
     }
 }
