@@ -1,21 +1,23 @@
 use std::time::Duration;
 
 #[derive(Debug)]
-struct TestStruct {
-    test : u8,
-    int_test : i8
+pub struct State {
+    pub joystick_x : i8,
+    pub joystick_y : i8,
+    pub rot_z : i8,
+    pub switch : u8
 }
 
-impl TryFrom<&[u8]> for TestStruct {
+impl TryFrom<&[u8]> for State {
     type Error = syiot::Error;
 
     fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-        if value.len() == 2 {
+        if value.len() == 4 {
             unsafe {
-                Ok(std::mem::transmute_copy::<[u8; 2], _>(&value.try_into()?))
+                Ok(std::mem::transmute_copy::<[u8; 4], _>(&value.try_into()?))
             }
         } else {
-            Err("Wrong size!".into())
+            Err(format!("Wrong size! {}", value.len()).into())
         }
     }
 }
@@ -28,7 +30,7 @@ fn main() -> Result<(), syiot::Error> {
     let mut tele = syiot::tele::SerialPortTele::open(port_name, baud_rate, timeout)?;
 
     loop {
-        let test : TestStruct = tele.recv()?;
+        let test : State = tele.request()?;
         dbg!(test);
     }
 }
