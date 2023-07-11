@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 #[derive(Debug)]
+#[allow(unused)]
 struct TestStruct {
     test : u8,
     int_test : i8

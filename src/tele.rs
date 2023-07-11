@@ -4,14 +4,18 @@ use std::time::Duration;
 
 use serialport::SerialPort;
 
-pub struct SerialPortTele<T : for<'b> TryFrom<&'b [u8]>> {
+use crate::TryFromBytes;
+
+/// A struct for using telemetry using a serial port 
+pub struct SerialPortTele<T : TryFromBytes> {
     port : Box<dyn SerialPort>,
     buf : Vec<u8>,
 
     pdata : PhantomData<T>
 }
 
-impl<T : for<'b> TryFrom<&'b [u8], Error = crate::Error>> SerialPortTele<T> {
+impl<T : TryFromBytes<Error = crate::Error>> SerialPortTele<T> {
+    /// Open the serial port to listen for telemetry data
     pub fn open<'a>(port : impl Into<std::borrow::Cow<'a, str>>, baud_rate : u32, timeout : Duration) -> Result<Self, crate::Error> {
         Ok(Self {
             port: serialport::new(port, baud_rate)
@@ -23,6 +27,7 @@ impl<T : for<'b> TryFrom<&'b [u8], Error = crate::Error>> SerialPortTele<T> {
         })
     }
 
+    /// Receive an instance of telemetry data (needs to be looped for streaming)
     pub fn recv(&mut self) -> Result<T, crate::Error> {
         let read_len = self.port.read(self.buf.as_mut_slice())?;
         T::try_from(&self.buf[..read_len])
