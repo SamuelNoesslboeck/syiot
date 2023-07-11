@@ -10,9 +10,18 @@ name = "syiot"
 path = "src/lib.rs"
 
 [[bin]]
-name = "controller"
-path = "bin/controller.rs"
+name = "control"
+path = "bin/control.rs"
+
+[[bin]]
+name = "control_client"
+path = "bin/control_client.rs"
+
+[[bin]]
+name = "serial"
+path = "bin/serial.rs"
 
 [dependencies]
 serialport = "4.2.1"
 base64 = "0.21.2"
+message-io = "0.17.0"

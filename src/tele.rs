@@ -6,14 +6,18 @@ use serialport::SerialPort;
 
 const REQUEST_BUF : [u8; 1] = [ 1 ];
 
-pub struct SerialPortTele<T : for<'b> TryFrom<&'b [u8]>> {
+use crate::TryFromBytes;
+
+/// A struct for using telemetry using a serial port 
+pub struct SerialPortTele<T : TryFromBytes> {
     port : Box<dyn SerialPort>,
     buf : Vec<u8>,
 
     pdata : PhantomData<T>
 }
 
-impl<T : for<'b> TryFrom<&'b [u8], Error = crate::Error>> SerialPortTele<T> {
+impl<T : TryFromBytes<Error = crate::Error>> SerialPortTele<T> {
+    /// Open the serial port to listen for telemetry data
     pub fn open<'a>(port : impl Into<std::borrow::Cow<'a, str>>, baud_rate : u32, timeout : Duration) -> Result<Self, crate::Error> {
         Ok(Self {
             port: serialport::new(port, baud_rate)
