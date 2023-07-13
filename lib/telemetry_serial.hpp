@@ -3,9 +3,9 @@
 # include <Arduino.h>
 
 namespace telemetry {
-    /// @brief The buffer used for telemetry IO
+    /// @brief The buffer used to store telemetry input
     static uint8_t BUF [16];
-
+    
     /// @brief Writes the given struct to the serial for telemetry purposes
     /// @tparam T The struct type that will be written to the serial
     /// @param serial serial interface to write to

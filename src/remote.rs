@@ -61,7 +61,7 @@ pub struct ControlClient<T> {
     server : Option<Endpoint>,
 
     net_handler : NodeHandler<()>,
-    // net_listener : NodeListener<()>,
+    _net_listener : NodeListener<()>,
 
     _data : PhantomData<T>
 }
@@ -74,6 +74,7 @@ impl<T> ControlClient<T> {
         Self {
             server: None,
             net_handler, 
+            _net_listener,
             _data: PhantomData::default()
         }
     }
@@ -81,6 +82,7 @@ impl<T> ControlClient<T> {
     /// Connect to a `Control` server
     pub fn connect(&mut self, transport : Transport, addr : impl ToRemoteAddr) -> Result<(), crate::Error> {
         self.server = Some(self.net_handler.network().connect(transport, addr)?.0);
+        
         Ok(())
     }
 

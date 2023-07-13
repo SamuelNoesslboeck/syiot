@@ -21,6 +21,8 @@ impl ControlHandler<Command> for Handler {
     fn on_msg(&mut self, msg : Result<Command, syiot::Error>) {
         if let Ok(cmd) = msg {
             dbg!(cmd);
+        } else {
+            dbg!(msg.err());
         }
     }
 }
@@ -28,7 +30,7 @@ impl ControlHandler<Command> for Handler {
 fn main() -> Result<(), syiot::Error> {
     let remote = Control::new(Handler { }); 
 
-    remote.listen(Transport::FramedTcp, "127.0.0.1:12200")?;
+    remote.listen(Transport::Tcp, "0.0.0.0:12200")?;
     remote.run();
 
     Ok(())
