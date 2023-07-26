@@ -13,10 +13,13 @@ pub use message_io::network::Transport;
 /// Handler trait with event functions for the [Control] struct
 pub trait ControlHandler<M : TryFromBytes> {
     /// Function that will be called once the `Control` has accept a client
-    fn on_accept(&mut self); 
+    fn on_accept(&mut self) { }
 
     /// Function that will be called once the `Control` received a message
-    fn on_msg(&mut self, msg : Result<M, crate::Error>);
+    fn on_msg(&mut self, _msg : Result<M, crate::Error>) { }
+
+    /// Function that will be called once a connection is lost
+    fn on_disconnect(&mut self) { }
 }
 
 /// 
@@ -51,7 +54,8 @@ impl<T : TryFromBytes, H : ControlHandler<T>> Control<T, H> {
         self.net_listener.for_each(move |event| match event.network() {
             NetEvent::Accepted(_ep, _r_id) => self.handler.on_accept(),
             NetEvent::Message(_ep, msg) => self.handler.on_msg(T::try_from(msg)),
-            _ => { }
+            NetEvent::Disconnected(_ep) => self.handler.on_disconnect(),
+            _ => { }    
         })
     }
 }
