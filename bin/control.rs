@@ -1,5 +1,3 @@
-use core::mem::size_of;
-
 use syiot::remote::{Control, ControlHandler, Transport};
 
 #[allow(unused)]

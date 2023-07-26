@@ -29,6 +29,7 @@ impl<T : TryFromBytes<Error = crate::Error>> SerialPortTele<T> {
         })
     }
 
+    /// Request data from the serial port 
     pub fn request(&mut self) -> Result<T, crate::Error> {
         self.port.write(&REQUEST_BUF)?;     // Request data
 
@@ -36,6 +37,7 @@ impl<T : TryFromBytes<Error = crate::Error>> SerialPortTele<T> {
         T::try_from(&self.buf[..read_len])
     }
 
+    /// Request data from the serial port, checks if the given data has the size of T, will not parse the value otherwise
     pub fn request_checked(&mut self) -> Result<T, crate::Error> {
         self.port.write(&REQUEST_BUF)?;     // Request data
 
@@ -45,9 +47,7 @@ impl<T : TryFromBytes<Error = crate::Error>> SerialPortTele<T> {
 
             if read_len == size_of::<T>() {
                 break;
-            } else {
-                dbg!(read_len);
-            }
+            } 
         }
 
         T::try_from(&self.buf[..read_len])

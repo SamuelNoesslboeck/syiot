@@ -38,9 +38,9 @@ macro_rules! impl_tryfrom_transmute {
             type Error = syiot::Error;
         
             fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-                if value.len() == size_of::<Self>() {
+                if value.len() == core::mem::size_of::<Self>() {
                     unsafe {
-                        let array : [u8; size_of::<Self>()] = value.clone().try_into().unwrap_unchecked();
+                        let array : [u8; core::mem::size_of::<Self>()] = value.clone().try_into().unwrap_unchecked();
                         Ok(core::mem::transmute::<_, Self>(array))
                     }
                 } else {
