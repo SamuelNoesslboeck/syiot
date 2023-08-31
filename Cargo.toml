@@ -24,4 +24,4 @@ path = "bin/serial.rs"
 [dependencies]
 serialport = "4.2.1"
 base64 = "0.21.2"
-message-io = "0.17.0"
+message-io = "0.16.0"       # Reverted to older version because 0.16.0 is not working properly
